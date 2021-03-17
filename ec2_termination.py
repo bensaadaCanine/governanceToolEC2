@@ -5,11 +5,16 @@ import sys
 import logging
 import datetime
 
+# Define RDS DB info (SAFE mod only)
+DATABASE_NAME = "sql_config"
+TABLE_NAME = "EC2_TERMINATE_CONFIGURATION"
+
 
 def configuration():
     x = datetime.datetime.now()
     # Catalog of monthly logs
-    logger = f'logging_{x.strftime("%B")}_{x.strftime("%Y")}.log'  # logging_Month_Year.log
+    # logging_Month_Year.log
+    logger = f'logging_{x.strftime("%B")}_{x.strftime("%Y")}.log'
     # Define the logger
     logging.basicConfig(level=logging.INFO, format='%(asctime)s :: %(levelname)s :: %(message)s',
                         handlers=[logging.FileHandler(logger),
@@ -18,7 +23,8 @@ def configuration():
     # Checking the state of the program via Sys.Argv (SAFE/UNSAFE)
     if sys.argv[1] == "unsafe":
         logging.warning("Working In UNSAFE Mod.")
-        return [None, None, None, logger]  # return [bucket,list_of_tags,slack_web_hook,logger]. all None except logger
+        # return [bucket,list_of_tags,slack_web_hook,logger]. all None except logger
+        return [None, None, None, logger]
     else:
         bucket, list_of_tags, slack_web_hook = get_config_from_rds()
 
@@ -77,11 +83,12 @@ def get_config_from_rds():
         try:
             # Trying to connect to the DB
             logging.info("Fetching Configuration from RDS...")
-            db = pymysql.connect(host=config[0], user=config[1], password=config[2], database="sql_config")
+            db = pymysql.connect(
+                host=config[0], user=config[1], password=config[2], database=DATABASE_NAME)
 
-            # Get the last inserted row of EC2_TERMINATE_CONFIGURATION table
+            # Get the last inserted row of the table defined globaly
             cursor = db.cursor()
-            sql = "SELECT logger_bucket_name,list_of_tags,slack_web_hook FROM EC2_TERMINATE_CONFIGURATION ORDER BY " \
+            sql = f"SELECT logger_bucket_name,list_of_tags,slack_web_hook FROM ${TABLE_NAME} ORDER BY " \
                   "time_of_insert DESC LIMIT 1; "
             cursor.execute(sql)
             data = cursor.fetchone()
@@ -89,20 +96,23 @@ def get_config_from_rds():
 
         except:
             # Aborting program if there is an exception while trying to get data
-            logging.critical("FAILED ATTEMPT TO CONNECT RDS! PLEASE CHECK CREDENTIALS! ABORTING...")
+            logging.critical(
+                "FAILED ATTEMPT TO CONNECT RDS! PLEASE CHECK CREDENTIALS! ABORTING...")
             sys.exit(0)
 
 
 def filtering_unprotected_instances(list_of_values, instances_per_region):
     unprotected_instances = []
 
-    for instances in instances_per_region:  # instances_per_region = [[region, instancesCollection]]
+    # instances_per_region = [[region, instancesCollection]]
+    for instances in instances_per_region:
 
         for i in instances[1]:  # instances[1] = instancesCollection
             flag = False
             if i.tags is None:
                 # Create a list of dics which points on instance_id and it's region
-                unprotected_instances.append({"instance_id": i.instance_id, "region": instances[0]})
+                unprotected_instances.append(
+                    {"instance_id": i.instance_id, "region": instances[0]})
             else:
                 for tag in i.tags:
                     if tag["Key"].lower() in list_of_values or tag["Value"].lower() in list_of_values:
@@ -110,7 +120,8 @@ def filtering_unprotected_instances(list_of_values, instances_per_region):
                         flag = True
                         break
                 if not flag:
-                    unprotected_instances.append({"instance_id": i.instance_id, "region": instances[0]})
+                    unprotected_instances.append(
+                        {"instance_id": i.instance_id, "region": instances[0]})
 
     return unprotected_instances
 
@@ -160,14 +171,16 @@ def create_ami_and_terminate(list_of_instances):
         ec2_res = boto3.resource('ec2', region_name=instance['region'])
 
         # Create AMI for the current instance
-        logging.info(f"Creating AMI For {instance['instance_id']} in '{instance['region']}' Region...")
+        logging.info(
+            f"Creating AMI For {instance['instance_id']} in '{instance['region']}' Region...")
         image = ec2.create_image(InstanceId=instance['instance_id'],
                                  NoReboot=True, Name=instance['instance_id'])
         waiter = ec2.get_waiter('image_available')
 
         try:
             # Wait for the AMI to be available
-            logging.info(f'Waiting for {instance["instance_id"]} AMI to be Availabe...')
+            logging.info(
+                f'Waiting for {instance["instance_id"]} AMI to be Availabe...')
             waiter.wait(ImageIds=[image["ImageId"]])
             logging.info(f'Image {instance["instance_id"]} is Available.')
 
@@ -177,13 +190,16 @@ def create_ami_and_terminate(list_of_instances):
                 f'Region...')
             slack_message_bot(
                 f'WARNING:: Terminating The Following Instance: {instance["instance_id"]} from \'{instance["region"]}\'...')
-            ec2_res.instances.filter(InstanceIds=[instance["instance_id"]]).stop()
-            ec2_res.instances.filter(InstanceIds=[instance["instance_id"]]).terminate()
+            ec2_res.instances.filter(
+                InstanceIds=[instance["instance_id"]]).stop()
+            ec2_res.instances.filter(
+                InstanceIds=[instance["instance_id"]]).terminate()
 
             logging.info("MISSION ACCOMPLISHED :)")
 
         except:
-            logging.error(f"Something went wrong with creating AMI for instance {instance['instance_id']}.")
+            logging.error(
+                f"Something went wrong with creating AMI for instance {instance['instance_id']}.")
             slack_message_bot(
                 f'ERROR:: Something went wrong with creating AMI for instance {instance["instance_id"]}.')
 
@@ -207,7 +223,8 @@ def slack_message_bot(text):
             requests.post(
                 slack_web_hook, headers=headers, data=data)
         except:
-            logging.error("Something went wrong with Slack messages sending. Please check endpoint.")
+            logging.error(
+                "Something went wrong with Slack messages sending. Please check endpoint.")
             return
 
 
