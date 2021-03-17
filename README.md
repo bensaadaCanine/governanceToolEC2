@@ -10,3 +10,5 @@ Terminates EC2 Instances according to an outer list of tags (and more...)
  4 fields: time_of_insert(timestamp),configuration_id(int),logger_bucket_name(text),list_of_tags(text),
  slack_web_hook(text). The tags should be separated by " " ONLY. This is a Cross Origin Version so it might take some
  time to find all the instances.
+ 
+ -Update 17 March 2020 : You can set the RDS DB name and table in global vars
