@@ -12,5 +12,5 @@ Terminates EC2 Instances according to an outer list of tags (and more...)
  time to find all the instances.
  
  -Update 17 March 2020 : 
-   You can set the RDS DB name and table in global vars.
+   You can set the RDS DB name and table in global vars.<br>
    Added sql query file for setting the basic database and table.
