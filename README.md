@@ -11,6 +11,6 @@ Terminates EC2 Instances according to an outer list of tags (and more...)
  slack_web_hook(text). The tags should be separated by " " ONLY. This is a Cross Origin Version so it might take some
  time to find all the instances.
  
- -Update 17 March 2020 : 
+ -Update 17 March 2020 :<br>
    You can set the RDS DB name and table in global vars.<br>
    Added sql query file for setting the basic database and table.
