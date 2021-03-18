@@ -8,7 +8,7 @@ Terminates EC2 Instances according to an outer list of tags (and more...)
  will terminate all the instances without the tagKey/tgValue 'protected'. In SAFE mod - it will attempt to get info
  from RDS 'sql_config' DB. in the 'sql_config' DB you need to have a table named: EC2_TERMINATE_CONFIGURATION with
  4 fields: time_of_insert(timestamp),configuration_id(int),logger_bucket_name(text),list_of_tags(text),
- slack_web_hook(text). The tags should be separated by " " ONLY. This is a Cross Origin Version so it might take some
+ slack_web_hook(text). The tags should be separated by "," ONLY. This is a Cross Origin Version so it might take some
  time to find all the instances.
  
  -Update 17 March 2020 :<br>
