@@ -106,7 +106,6 @@ def filtering_unprotected_instances(list_of_values, instances_per_region):
 
     # instances_per_region = [[region, instancesCollection]]
     for instances in instances_per_region:
-
         for i in instances[1]:  # instances[1] = instancesCollection
             if i.tags is None:
                 # Create a list of dics which points on instance_id and it's region
