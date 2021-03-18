@@ -19,9 +19,9 @@ def configuration():
     logger = f'logging_{x.strftime("%B")}_{x.strftime("%Y")}.log'
     
     # Find the last month's string
-    last_month = datetime.now() - relativedelta(months=1)
+    last_month = x - relativedelta(months=1)
     last_month_logger = f'logging_{last_month.strftime("%B")}_{x.strftime("%Y")}.log'
-    # Deleting older log files on the machine (localy)
+    # Deleting older log files on the machine (locally)
     if os.path.exists(last_month_logger):
         os.remove(last_month_logger)
         
