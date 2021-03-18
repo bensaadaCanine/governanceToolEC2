@@ -40,7 +40,7 @@ def configuration():
 
         # Can't split None - so checking for the existence of list_of_tags first
         if list_of_tags:
-            list_of_tags = list_of_tags.split(" ")
+            list_of_tags = list_of_tags.split(",")
 
         return [bucket, list_of_tags, slack_web_hook, logger]
 
@@ -145,6 +145,8 @@ def filtering_unprotected_instances(list_of_values, instances_per_region):
 #         slack_message_bot(
 #             f'WARNING::list_of_tags.txt wasn\'t found in the bucket. Please check '
 #             f'<https://s3.console.aws.amazon.com/s3/buckets/{bucket}|S3 Bucket>.\nFiltering UNPROTECTED Instances')
+#         logging.warning(
+#                 "list_of_tags.txt wasn\'t found in the bucket. Filtering UNPROTECTED Instances")
 #         return None
 
 
