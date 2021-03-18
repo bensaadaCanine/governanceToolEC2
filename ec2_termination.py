@@ -114,8 +114,7 @@ def filtering_unprotected_instances(list_of_values, instances_per_region):
             else:
                 for tag in i.tags:
                     if tag["Key"].lower() in list_of_values or tag["Value"].lower() in list_of_values:
-                        # If it happen to get unto a key or value that matches the list - it stops the search.
-                        flag = True
+                        # If it happen to get unto a key or value that matches the list - it stops the search
                         break
                     # In case of not finding any of the written tags:
                     unprotected_instances.append(
