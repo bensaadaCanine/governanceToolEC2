@@ -108,7 +108,6 @@ def filtering_unprotected_instances(list_of_values, instances_per_region):
     for instances in instances_per_region:
 
         for i in instances[1]:  # instances[1] = instancesCollection
-            flag = False
             if i.tags is None:
                 # Create a list of dics which points on instance_id and it's region
                 unprotected_instances.append(
@@ -119,7 +118,7 @@ def filtering_unprotected_instances(list_of_values, instances_per_region):
                         # If it happen to get unto a key or value that matches the list - it stops the search.
                         flag = True
                         break
-                if not flag:
+                    # In case of not finding any of the written tags:
                     unprotected_instances.append(
                         {"instance_id": i.instance_id, "region": instances[0]})
 
