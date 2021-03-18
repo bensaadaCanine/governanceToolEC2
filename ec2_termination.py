@@ -4,6 +4,8 @@ import pymysql
 import sys
 import logging
 import datetime
+from dateutil.relativedelta import relativedelta
+import os
 
 # Define RDS DB info (SAFE mod only)
 DATABASE_NAME = "sql_config"
@@ -15,6 +17,14 @@ def configuration():
     # Catalog of monthly logs
     # logging_Month_Year.log
     logger = f'logging_{x.strftime("%B")}_{x.strftime("%Y")}.log'
+    
+    # Find the last month's string
+    last_month = datetime.now() - relativedelta(months=1)
+    last_month_logger = f'logging_{last_month.strftime("%B")}_{x.strftime("%Y")}.log'
+    # Deleting older log files on the machine (localy)
+    if os.path.exists(last_month_logger):
+        os.remove(last_month_logger)
+        
     # Define the logger
     logging.basicConfig(level=logging.INFO, format='%(asctime)s :: %(levelname)s :: %(message)s',
                         handlers=[logging.FileHandler(logger),
