@@ -38,11 +38,14 @@ def configuration():
     else:
         bucket, list_of_tags, slack_web_hook = get_config_from_rds()
 
-        # Can't split None - so checking for the existence of list_of_tags first
-        if list_of_tags:
+        # Make list_of_tags required in SAFE mod
+        try:
             list_of_tags = list_of_tags.split(",")
+            return [bucket, list_of_tags, slack_web_hook, logger]
 
-        return [bucket, list_of_tags, slack_web_hook, logger]
+        except:
+            logging.critical("PLEASE CHECK THE EXISTENCE OF list_of_tags! ABORTING...")
+            sys.exit(0)
 
 
 def ec2_termination_main():
