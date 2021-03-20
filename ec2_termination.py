@@ -17,14 +17,14 @@ def configuration():
     # Catalog of monthly logs
     # logging_Month_Year.log
     logger = f'logging_{x.strftime("%B")}_{x.strftime("%Y")}.log'
-    
+
     # Find the last month's string
     last_month = x - relativedelta(months=1)
     last_month_logger = f'logging_{last_month.strftime("%B")}_{x.strftime("%Y")}.log'
     # Deleting older log files on the machine (locally)
     if os.path.exists(last_month_logger):
         os.remove(last_month_logger)
-        
+
     # Define the logger
     logging.basicConfig(level=logging.INFO, format='%(asctime)s :: %(levelname)s :: %(message)s',
                         handlers=[logging.FileHandler(logger),
@@ -32,7 +32,7 @@ def configuration():
 
     # Checking the state of the program via Sys.Argv (SAFE/UNSAFE)
     if sys.argv[1] == "unsafe":
-        logging.warning("Working In UNSAFE Mod.")
+        logging.warning("Working in UNSAFE mod")
         # return [bucket,list_of_tags,slack_web_hook,logger]. all None except logger
         return [None, None, None, logger]
     else:
@@ -83,7 +83,6 @@ def ec2_termination_main():
 
 
 def get_config_from_rds():
-
     # Checking the RDS credentials from Sys.Argv
     config = sys.argv[1].split(",")
 
@@ -135,6 +134,7 @@ def filtering_unprotected_instances(list_of_values, instances_per_region):
 
     return unprotected_instances
 
+
 # Get a list via S3 bucket
 # def get_dynamic_list():
 #     s3 = boto3.resource('s3')
@@ -145,11 +145,7 @@ def filtering_unprotected_instances(list_of_values, instances_per_region):
 #         list_of_tags = body.split(" ")
 #         return list_of_tags
 #     except:
-#         slack_message_bot(
-#             f'WARNING::list_of_tags.txt wasn\'t found in the bucket. Please check '
-#             f'<https://s3.console.aws.amazon.com/s3/buckets/{bucket}|S3 Bucket>.\nFiltering UNPROTECTED Instances')
-#         logging.warning(
-#                 "list_of_tags.txt wasn\'t found in the bucket. Filtering UNPROTECTED Instances")
+#         warning_and_above_logging("list_of_tags.txt wasn\'t found in the bucket. Filtering UNPROTECTED Instances.")
 #         return None
 
 
@@ -166,14 +162,11 @@ def update_log_file():
             s3.upload_file(log, bucket, f'logFiles/{log}')
 
         except:
-            slack_message_bot(
-                f'ERROR:: Something went wrong with log file uploading. Please check '
-                f'<https://s3.console.aws.amazon.com/s3/buckets/{bucket}|S3 Bucket> permissions/existence.')
-            logging.error(
-                'Something went wrong with log file uploading. Please check bucket permissions/existence.')
+            warning_and_above_logging(f'Something went wrong with log file uploading. Please check '
+                                      f'<https://s3.console.aws.amazon.com/s3/buckets/{bucket}|\'{bucket}\' bucket> '
+                                      f'permissions/existence.', "error")
     else:
-        logging.error("No Bucket Name Inserted")
-        slack_message_bot(f'ERROR:: No Bucket Name Inserted')
+        warning_and_above_logging("No Bucket Name Inserted", "error")
 
 
 def create_ami_and_terminate(list_of_instances):
@@ -197,11 +190,9 @@ def create_ami_and_terminate(list_of_instances):
             logging.info(f'Image {instance["instance_id"]} is Available.')
 
             # Stop and terminate the current instance
-            logging.warning(
-                f'Terminating The Following Instance: {instance["instance_id"]} from \'{instance["region"]}\' '
-                f'Region...')
-            slack_message_bot(
-                f'WARNING:: Terminating The Following Instance: {instance["instance_id"]} from \'{instance["region"]}\'...')
+            warning_and_above_logging(
+                f'Terminating The Following Instance: {instance["instance_id"]} from \'{instance["region"]}\' Region...')
+
             ec2_res.instances.filter(
                 InstanceIds=[instance["instance_id"]]).stop()
             ec2_res.instances.filter(
@@ -210,17 +201,11 @@ def create_ami_and_terminate(list_of_instances):
             logging.info("MISSION ACCOMPLISHED :)")
 
         except:
-            logging.error(
-                f"Something went wrong with creating AMI for instance {instance['instance_id']}.")
-            slack_message_bot(
-                f'ERROR:: Something went wrong with creating AMI for instance {instance["instance_id"]}.')
+            warning_and_above_logging(f"Something went wrong with creating AMI for instance {instance['instance_id']}.",
+                                      "error")
 
             # Aborting program
-            logging.critical(
-                "Aborting Program. Please Check The Logs For Further Information")
-            slack_message_bot(
-                f'CRITICAL:: Aborting Program. Please Check The Logs For Further Information')
-
+            warning_and_above_logging("Aborting Program. Please Check The Logs For Further Information", "critical")
             sys.exit(0)
 
 
@@ -238,6 +223,17 @@ def slack_message_bot(text):
             logging.error(
                 "Something went wrong with Slack messages sending. Please check endpoint.")
             return
+
+
+def warning_and_above_logging(text, level="warning"):
+    if level == "warning":
+        logging.warning(text)
+    elif level == "critical":
+        logging.critical(text)
+    elif level == "error":
+        logging.error(text)
+
+    slack_message_bot(f'{level.upper()} :: {text}')
 
 
 bucket, list_of_tags, slack_web_hook, log = configuration()
