@@ -2,7 +2,7 @@
 Terminates EC2 Instances according to an outer list of tags (and more...)
 
 # READ FIRST:
- In order for this code to run smoothly - you need to have an AWS account configured on this machine with access to
+ In order for this code to run smoothly - you need to have an AWS account configured on this machine/IAM Role with access to
  EC2 (READ,CREATING AMI,STOP,TERMINATE) and S3 (WRITE). This code runs in two versions - UNSAFE and SAFE (depends on
  sys.argv[1] => 'unsafe'/RDS info ('Host,Username,Password'). If you will choose to run in UNSAFE mod - this program
  will terminate all the instances without the tagKey/tgValue 'protected'. In SAFE mod - it will attempt to get info
